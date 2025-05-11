@@ -1,5 +1,6 @@
 
 import { ControlMapping, TemplateData, ApiResponse } from '../types';
+import { toast } from "@/components/ui/use-toast";
 
 // This is a mock implementation for the frontend
 // In a real app, these would connect to actual backend endpoints
@@ -41,6 +42,12 @@ export const parseChartData = async (
     
     if (!openaiApiKey) {
       // Instead of throwing an error that breaks the app, return a more user-friendly error
+      toast({
+        title: "API Key Required",
+        description: "OpenAI API key is required for chart parsing. Please add it in your project settings.",
+        variant: "destructive",
+      });
+      
       return {
         success: false,
         error: "OpenAI API key not configured. Please add your API key in the project settings to enable chart parsing."
