@@ -36,6 +36,13 @@ export const parseChartData = async (
       throw new Error("Missing input data. Please provide either text or a file to parse, and a synthesizer name.");
     }
     
+    // Check if we have the OpenAI API key
+    const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    
+    if (!openaiApiKey) {
+      throw new Error("OpenAI API key not configured");
+    }
+    
     // Call OpenAI API to parse the text content
     try {
       // In a real backend implementation, this would use:
