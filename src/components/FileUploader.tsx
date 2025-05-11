@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { FileUploadState } from '../types';
 
 interface Props {
-  onDataSubmit: (data: { text: string, synthName: string }) => void;
+  onDataSubmit: (data: FormData | { text: string, synthName: string }) => void;
   isProcessing: boolean;
 }
 
@@ -38,13 +38,16 @@ const FileUploader: React.FC<Props> = ({ onDataSubmit, isProcessing }) => {
       if (file.type === 'text/plain' || file.type === 'application/pdf' || file.type === 'text/csv') {
         setState(prev => ({ ...prev, file, error: null }));
         
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target && typeof event.target.result === 'string') {
-            setState(prev => ({ ...prev, text: event.target.result as string }));
-          }
-        };
-        reader.readAsText(file);
+        // If it's a PDF, we don't attempt to read it as text
+        if (file.type !== 'application/pdf') {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            if (event.target && typeof event.target.result === 'string') {
+              setState(prev => ({ ...prev, text: event.target.result as string }));
+            }
+          };
+          reader.readAsText(file);
+        }
       } else {
         setState(prev => ({ 
           ...prev, 
@@ -65,13 +68,16 @@ const FileUploader: React.FC<Props> = ({ onDataSubmit, isProcessing }) => {
       if (file.type === 'text/plain' || file.type === 'application/pdf' || file.type === 'text/csv') {
         setState(prev => ({ ...prev, file, error: null }));
         
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target && typeof event.target.result === 'string') {
-            setState(prev => ({ ...prev, text: event.target.result as string }));
-          }
-        };
-        reader.readAsText(file);
+        // If it's a PDF, we don't attempt to read it as text
+        if (file.type !== 'application/pdf') {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            if (event.target && typeof event.target.result === 'string') {
+              setState(prev => ({ ...prev, text: event.target.result as string }));
+            }
+          };
+          reader.readAsText(file);
+        }
       } else {
         setState(prev => ({ 
           ...prev, 
@@ -84,21 +90,33 @@ const FileUploader: React.FC<Props> = ({ onDataSubmit, isProcessing }) => {
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!state.text.trim()) {
-      setState(prev => ({ ...prev, error: 'Please enter or upload CC chart data' }));
-      return;
-    }
-    
     if (!synthName.trim()) {
       setState(prev => ({ ...prev, error: 'Please enter a synth name' }));
       return;
     }
     
-    onDataSubmit({
-      text: state.text,
-      synthName: synthName
-    });
-  }, [state.text, synthName, onDataSubmit]);
+    // If we have a file, especially a PDF, use FormData
+    if (state.file) {
+      const formData = new FormData();
+      formData.append('file', state.file);
+      formData.append('synthName', synthName);
+      
+      // If we have text and it's not a PDF, also send that
+      if (state.text && state.file.type !== 'application/pdf') {
+        formData.append('text', state.text);
+      }
+      
+      onDataSubmit(formData);
+    } else if (state.text.trim()) {
+      // No file, but we have text
+      onDataSubmit({
+        text: state.text,
+        synthName: synthName
+      });
+    } else {
+      setState(prev => ({ ...prev, error: 'Please enter or upload CC chart data' }));
+    }
+  }, [state.file, state.text, synthName, onDataSubmit]);
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
@@ -148,9 +166,16 @@ const FileUploader: React.FC<Props> = ({ onDataSubmit, isProcessing }) => {
             </label>
             
             {state.file && (
-              <p className="text-xs text-accent">
-                Selected file: {state.file.name}
-              </p>
+              <div className="text-xs">
+                <p className="text-accent">
+                  Selected file: {state.file.name}
+                </p>
+                {state.file.type === 'application/pdf' && (
+                  <p className="text-slate mt-1">
+                    PDF will be processed on the server
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -160,8 +185,13 @@ const FileUploader: React.FC<Props> = ({ onDataSubmit, isProcessing }) => {
           onChange={handleTextChange}
           placeholder="Or paste your CC chart data here..."
           className="mt-4 w-full h-40 px-3 py-2 bg-gunmetal border border-accentDim rounded-md text-white resize-y focus:outline-none focus:ring-2 focus:ring-accent/50"
-          disabled={isProcessing}
+          disabled={isProcessing || (state.file?.type === 'application/pdf')}
         />
+        {state.file?.type === 'application/pdf' && (
+          <p className="text-xs text-slate mt-1">
+            Text input disabled while PDF is selected
+          </p>
+        )}
       </div>
       
       {state.error && (

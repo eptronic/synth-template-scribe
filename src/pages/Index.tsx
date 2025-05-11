@@ -13,12 +13,16 @@ const Index = () => {
   const [synthName, setSynthName] = useState<string>('');
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
 
-  const handleDataSubmit = async (data: { text: string, synthName: string }) => {
+  const handleDataSubmit = async (data: FormData | { text: string, synthName: string }) => {
     try {
       setIsProcessing(true);
       
       // Store synth name for later use
-      setSynthName(data.synthName);
+      if (data instanceof FormData) {
+        setSynthName(data.get('synthName') as string);
+      } else {
+        setSynthName(data.synthName);
+      }
       
       // Call API to parse the data
       const parseResponse = await parseChartData(data);
@@ -31,9 +35,14 @@ const Index = () => {
       setMappings(parseResponse.data);
       
       try {
+        // Get the synthName from either the FormData or the direct object
+        const synthNameValue = data instanceof FormData 
+          ? data.get('synthName') as string 
+          : data.synthName;
+          
         // Build the template - now returns a Blob directly
         const blob = await buildTemplate({
-          synthName: data.synthName,
+          synthName: synthNameValue,
           controls: parseResponse.data
         });
         
@@ -42,11 +51,11 @@ const Index = () => {
         setTimeout(() => setShowAnimation(false), 1500);
         
         // Download the template
-        downloadTemplate(blob, data.synthName);
+        downloadTemplate(blob, synthNameValue);
         
         toast({
           title: "Template generated successfully!",
-          description: `${data.synthName}_Template.syx has been downloaded.`,
+          description: `${synthNameValue}_Template.syx has been downloaded.`,
         });
       } catch (error) {
         throw new Error('Failed to build template: ' + (error instanceof Error ? error.message : String(error)));

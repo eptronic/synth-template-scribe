@@ -1,3 +1,4 @@
+
 import { ControlMapping, TemplateData, ApiResponse } from '../types';
 
 // This is a mock implementation for the frontend
