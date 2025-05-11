@@ -2,13 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { LockKeyhole, CheckCircle, XCircle } from 'lucide-react';
+import { LockKeyhole, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from './ui/alert';
 
 interface ApiKeyInputProps {
   onApiKeyChange: (apiKey: string) => void;
+  requiredForOperation: boolean;
 }
 
-const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
+const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange, requiredForOperation = true }) => {
   const [apiKey, setApiKey] = useState<string>('');
   const [saved, setSaved] = useState<boolean>(false);
   const [visible, setVisible] = useState<boolean>(false);
@@ -45,6 +47,15 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
         <LockKeyhole className="mr-2 text-cyan-500" size={18} />
         <h3 className="text-white font-medium">OpenAI API Key</h3>
       </div>
+      
+      {requiredForOperation && !saved && (
+        <Alert variant="destructive" className="mb-3 bg-red-900/20 border-red-800">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            OpenAI API key required. The app cannot function without it.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="flex flex-col space-y-2">
         <div className="flex space-x-2">

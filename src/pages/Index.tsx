@@ -24,7 +24,7 @@ const Index = () => {
       setIsProcessing(true);
       
       if (!apiKey) {
-        throw new Error("Please enter your OpenAI API key before submitting.");
+        throw new Error("OpenAI API key required. Please enter your API key before submitting.");
       }
       
       // Store synth name for later use
@@ -99,7 +99,7 @@ const Index = () => {
           
           <div className="bg-gunmetal/80 rounded-2xl p-8 shadow-lg relative">
             {showAnimation && <div className="data-sent-animation"></div>}
-            <ApiKeyInput onApiKeyChange={handleApiKeyChange} />
+            <ApiKeyInput onApiKeyChange={handleApiKeyChange} requiredForOperation={true} />
             <FileUploader onDataSubmit={handleDataSubmit} isProcessing={isProcessing} />
           </div>
           

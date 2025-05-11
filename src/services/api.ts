@@ -14,7 +14,7 @@ export const parseChartData = async (
     const apiKey = localStorage.getItem('openai_api_key');
     
     if (!apiKey) {
-      throw new Error("OpenAI API key not provided. Please enter your API key to use this feature.");
+      throw new Error("OpenAI API key required. Please enter your API key to use this feature.");
     }
     
     let textContent = "";
@@ -37,6 +37,10 @@ export const parseChartData = async (
     } else {
       textContent = data.text;
       synthNameValue = data.synthName;
+    }
+    
+    if (!textContent.trim() && !synthNameValue.trim()) {
+      throw new Error("Missing input data. Please provide either text or a file to parse, and a synthesizer name.");
     }
     
     // Call OpenAI API to parse the text content
@@ -64,7 +68,12 @@ export const parseChartData = async (
       });
       
       if (!openAiResponse.ok) {
-        throw new Error(`OpenAI API error: ${openAiResponse.status} ${await openAiResponse.text()}`);
+        const errorText = await openAiResponse.text();
+        if (openAiResponse.status === 401) {
+          throw new Error("Invalid OpenAI API key. Please verify your API key and try again.");
+        } else {
+          throw new Error(`OpenAI API error: ${openAiResponse.status} - ${errorText}`);
+        }
       }
       
       const response = await openAiResponse.json();
@@ -73,6 +82,10 @@ export const parseChartData = async (
       return { success: true, data: parsedControls };
     } catch (error) {
       console.error("OpenAI API error:", error);
+      
+      if (error instanceof Error && error.message.includes("API key")) {
+        throw error; // Re-throw API key errors directly
+      }
       
       // Fall back to mock data for demo purposes
       console.log("Falling back to mock data");
