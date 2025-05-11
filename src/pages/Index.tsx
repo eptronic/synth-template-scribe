@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import FileUploader from '../components/FileUploader';
+import FileUploader from '../components/file-uploader';
 import MappingsPreview from '../components/MappingsPreview';
 import { parseChartData, buildTemplate, downloadTemplate } from '../services/api';
 import { ControlMapping } from '../types';
