@@ -40,7 +40,11 @@ export const parseChartData = async (
     const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
     
     if (!openaiApiKey) {
-      throw new Error("OpenAI API key not configured");
+      // Instead of throwing an error that breaks the app, return a more user-friendly error
+      return {
+        success: false,
+        error: "OpenAI API key not configured. Please add your API key in the project settings to enable chart parsing."
+      };
     }
     
     // Call OpenAI API to parse the text content
