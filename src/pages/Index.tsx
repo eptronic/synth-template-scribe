@@ -30,27 +30,27 @@ const Index = () => {
       // Save the mappings
       setMappings(parseResponse.data);
       
-      // Build the template
-      const buildResponse = await buildTemplate({
-        synthName: data.synthName,
-        controls: parseResponse.data
-      });
-      
-      if (!buildResponse.success || !buildResponse.data) {
-        throw new Error(buildResponse.error || 'Failed to build template');
+      try {
+        // Build the template - now returns a Blob directly
+        const blob = await buildTemplate({
+          synthName: data.synthName,
+          controls: parseResponse.data
+        });
+        
+        // Show success animation
+        setShowAnimation(true);
+        setTimeout(() => setShowAnimation(false), 1500);
+        
+        // Download the template
+        downloadTemplate(blob, data.synthName);
+        
+        toast({
+          title: "Template generated successfully!",
+          description: `${data.synthName}_Template.syx has been downloaded.`,
+        });
+      } catch (error) {
+        throw new Error('Failed to build template: ' + (error instanceof Error ? error.message : String(error)));
       }
-      
-      // Show success animation
-      setShowAnimation(true);
-      setTimeout(() => setShowAnimation(false), 1500);
-      
-      // Download the template
-      downloadTemplate(buildResponse.data, data.synthName);
-      
-      toast({
-        title: "Template generated successfully!",
-        description: `${data.synthName}_Template.syx has been downloaded.`,
-      });
     } catch (error) {
       console.error('Error processing data:', error);
       toast({

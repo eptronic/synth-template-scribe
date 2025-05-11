@@ -23,3 +23,9 @@ export interface FileUploadState {
   isProcessing: boolean;
   error: string | null;
 }
+
+// SysEx related types
+export interface SysExData {
+  byteLength: number;
+  bytes: Uint8Array;
+}
