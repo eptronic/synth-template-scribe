@@ -1,4 +1,3 @@
-
 import { ControlMapping, TemplateData, ApiResponse } from '../types';
 import { toast } from "@/components/ui/use-toast";
 
@@ -37,33 +36,27 @@ export const parseChartData = async (
       throw new Error("Missing input data. Please provide either text or a file to parse, and a synthesizer name.");
     }
     
-    // Check if we have the OpenAI API key
-    const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    // First check localStorage for dev API key, then check environment variable
+    const localApiKey = localStorage.getItem('openai_api_key');
+    const envApiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    const openaiApiKey = localApiKey || envApiKey;
     
     if (!openaiApiKey) {
       // Instead of throwing an error that breaks the app, return a more user-friendly error
       toast({
         title: "API Key Required",
-        description: "OpenAI API key is required for chart parsing. Please add it in your project settings.",
+        description: "OpenAI API key is required for chart parsing. Please add your API key using the 'Set API Key' button.",
         variant: "destructive",
       });
       
       return {
         success: false,
-        error: "OpenAI API key not configured. Please add your API key in the project settings to enable chart parsing."
+        error: "OpenAI API key not configured. Please add your API key to enable chart parsing."
       };
     }
     
     // Call OpenAI API to parse the text content
     try {
-      // In a real backend implementation, this would use:
-      // import os
-      // from dotenv import load_dotenv
-      // load_dotenv()
-      // key = os.getenv("OPENAI_API_KEY")
-      // if not key:
-      //     raise HTTPException(status_code=500, detail="OpenAI API key not configured")
-
       // Simulate API processing time
       await new Promise(resolve => setTimeout(resolve, 1500));
       

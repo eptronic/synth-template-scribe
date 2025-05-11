@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import FileUploader from '../components/file-uploader';
 import MappingsPreview from '../components/MappingsPreview';
+import ApiKeyButton from '../components/ApiKeyButton';
 import { parseChartData, buildTemplate, downloadTemplate } from '../services/api';
 import { ControlMapping } from '../types';
 import { toast } from "../components/ui/use-toast";
@@ -78,13 +79,16 @@ const Index = () => {
       
       <main className="flex-1 px-4 py-8">
         <div className="max-w-xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white text-left mb-2">
-              SL MkIII Template Builder
-            </h1>
-            <p className="text-slate text-left">
-              Turn any CC chart into a Novation SL MkIII template .syx file in one click.
-            </p>
+          <div className="mb-8 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-white text-left mb-2">
+                SL MkIII Template Builder
+              </h1>
+              <p className="text-slate text-left">
+                Turn any CC chart into a Novation SL MkIII template .syx file in one click.
+              </p>
+            </div>
+            <ApiKeyButton />
           </div>
           
           <div className="bg-gunmetal/80 rounded-2xl p-8 shadow-lg relative">
