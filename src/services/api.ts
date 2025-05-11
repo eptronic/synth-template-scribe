@@ -1,5 +1,5 @@
+
 import { ControlMapping, TemplateData, ApiResponse } from '../types';
-import { toast } from "@/components/ui/use-toast";
 
 // This is a mock implementation for the frontend
 // In a real app, these would connect to actual backend endpoints
@@ -8,108 +8,48 @@ export const parseChartData = async (
   data: FormData | { text: string; synthName: string }
 ): Promise<ApiResponse<ControlMapping[]>> => {
   try {
+    // In a real app, this would be a fetch call to your API
+    // For demo purposes, we'll simulate a successful response
     console.log('Parsing chart data:', data);
     
-    let textContent = "";
-    let synthNameValue = "";
+    // Simulate API processing time
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Extract text content and synth name from different data formats
-    if (data instanceof FormData) {
-      synthNameValue = data.get('synthName') as string;
-      
-      const fileData = data.get('file');
-      const textData = data.get('text');
-      
-      if (fileData instanceof File) {
-        // In a real implementation, we'd process the file here
-        // For now, we'll use the OpenAI API to parse the text content
-        textContent = "This is a placeholder for PDF content that would be extracted.";
-      } else if (textData) {
-        textContent = textData as string;
-      }
-    } else {
-      textContent = data.text;
-      synthNameValue = data.synthName;
-    }
+    // Mock response with sample mappings
+    const mockControls: ControlMapping[] = [
+      { name: "Cutoff", cc: 74, type: "pot" },
+      { name: "Resonance", cc: 71, type: "pot" },
+      { name: "Attack", cc: 73, type: "pot" },
+      { name: "Decay", cc: 75, type: "pot" },
+      { name: "Sustain", cc: 76, type: "pot" },
+      { name: "Release", cc: 72, type: "pot" },
+      { name: "LFO Rate", cc: 77, type: "pot" },
+      { name: "LFO Amount", cc: 78, type: "pot" },
+      { name: "Filter Env", cc: 79, type: "pot" },
+      { name: "Osc Mix", cc: 70, type: "fader" },
+      { name: "Volume", cc: 7, type: "fader" },
+      { name: "Pan", cc: 10, type: "fader" },
+      { name: "Delay Send", cc: 91, type: "fader" },
+      { name: "Reverb Send", cc: 94, type: "fader" },
+      { name: "Note On", cc: 80, type: "pad" },
+      { name: "Note Off", cc: 81, type: "pad" },
+    ];
     
-    if (!textContent.trim() && !synthNameValue.trim()) {
-      throw new Error("Missing input data. Please provide either text or a file to parse, and a synthesizer name.");
-    }
-    
-    // First check localStorage for dev API key, then check environment variable
-    const localApiKey = localStorage.getItem('openai_api_key');
-    const envApiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    const openaiApiKey = localApiKey || envApiKey;
-    
-    if (!openaiApiKey) {
-      // Instead of throwing an error that breaks the app, return a more user-friendly error
-      toast({
-        title: "API Key Required",
-        description: "OpenAI API key is required for chart parsing. Please add your API key using the 'Set API Key' button.",
-        variant: "destructive",
-      });
-      
-      return {
-        success: false,
-        error: "OpenAI API key not configured. Please add your API key to enable chart parsing."
-      };
-    }
-    
-    // Call OpenAI API to parse the text content
-    try {
-      // Simulate API processing time
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock response with sample mappings - in real implementation this would be the OpenAI API response
-      const mockControls: ControlMapping[] = [
-        { name: "Cutoff", cc: 74, type: "pot" },
-        { name: "Resonance", cc: 71, type: "pot" },
-        { name: "Attack", cc: 73, type: "pot" },
-        { name: "Decay", cc: 75, type: "pot" },
-        { name: "Sustain", cc: 76, type: "pot" },
-        { name: "Release", cc: 72, type: "pot" },
-        { name: "LFO Rate", cc: 77, type: "pot" },
-        { name: "LFO Amount", cc: 78, type: "pot" },
-        { name: "Filter Env", cc: 79, type: "pot" },
-        { name: "Osc Mix", cc: 70, type: "fader" },
-        { name: "Volume", cc: 7, type: "fader" },
-        { name: "Pan", cc: 10, type: "fader" },
-        { name: "Delay Send", cc: 91, type: "fader" },
-        { name: "Reverb Send", cc: 94, type: "fader" },
-        { name: "Note On", cc: 80, type: "pad" },
-        { name: "Note Off", cc: 81, type: "pad" },
-      ];
-      
-      return { success: true, data: mockControls };
-    } catch (error) {
-      console.error("API error:", error);
-      
-      // Handle specific error for missing API key
-      if (error instanceof Error && error.message.includes("OpenAI API key not configured")) {
-        return {
-          success: false,
-          error: "Server configuration error: OpenAI API key not configured"
-        };
-      }
-      
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : "Failed to parse chart data. Please check your input and try again."
-      };
-    }
+    return { success: true, data: mockControls };
   } catch (error) {
     console.error("Error parsing chart data:", error);
     return { 
       success: false, 
-      error: error instanceof Error ? error.message : "Failed to parse chart data. Please check your input and try again."
+      error: "Failed to parse chart data. Please check your input and try again."
     };
   }
 };
 
 export const buildTemplate = async (
   templateData: TemplateData
-): Promise<Blob> => {
+): Promise<ApiResponse<Blob>> => {
   try {
+    // In a real app, this would be a fetch call to your backend API
     console.log('Building template with data:', templateData);
     
     // Simulate API processing time
@@ -119,17 +59,17 @@ export const buildTemplate = async (
     // In a real app, this would be actual sysex data from your backend
     const mockSyxData = new Uint8Array([
       0xF0, 0x00, 0x20, 0x29, 0x01, 0x42, 0x12, 
-      // Add more bytes to simulate a more realistic SysEx file
-      0x00, 0x01, 0x00, 0x00, 0x02, 0x03, 0x04,
-      // Add more bytes... in a real implementation this would be generated by the backend
-      0xF7 // SysEx end byte
+      0x00, 0x01, 0x00, 0x00, 0xF7
     ]);
     
-    // Return as Blob with the correct MIME type
-    return new Blob([mockSyxData], { type: 'application/octet-stream' });
+    const blob = new Blob([mockSyxData], { type: 'application/octet-stream' });
+    return { success: true, data: blob };
   } catch (error) {
     console.error("Error building template:", error);
-    throw new Error(error instanceof Error ? error.message : "Failed to build template");
+    return { 
+      success: false, 
+      error: "Failed to build template. Please try again later."
+    };
   }
 };
 

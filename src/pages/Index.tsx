@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import FileUploader from '../components/file-uploader';
+import FileUploader from '../components/FileUploader';
 import MappingsPreview from '../components/MappingsPreview';
-import ApiKeyButton from '../components/ApiKeyButton';
 import { parseChartData, buildTemplate, downloadTemplate } from '../services/api';
 import { ControlMapping } from '../types';
 import { toast } from "../components/ui/use-toast";
@@ -14,16 +13,12 @@ const Index = () => {
   const [synthName, setSynthName] = useState<string>('');
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
 
-  const handleDataSubmit = async (data: FormData | { text: string, synthName: string }) => {
+  const handleDataSubmit = async (data: { text: string, synthName: string }) => {
     try {
       setIsProcessing(true);
       
       // Store synth name for later use
-      if (data instanceof FormData) {
-        setSynthName(data.get('synthName') as string);
-      } else {
-        setSynthName(data.synthName);
-      }
+      setSynthName(data.synthName);
       
       // Call API to parse the data
       const parseResponse = await parseChartData(data);
@@ -35,32 +30,27 @@ const Index = () => {
       // Save the mappings
       setMappings(parseResponse.data);
       
-      try {
-        // Get the synthName from either the FormData or the direct object
-        const synthNameValue = data instanceof FormData 
-          ? data.get('synthName') as string 
-          : data.synthName;
-          
-        // Build the template - now returns a Blob directly
-        const blob = await buildTemplate({
-          synthName: synthNameValue,
-          controls: parseResponse.data
-        });
-        
-        // Show success animation
-        setShowAnimation(true);
-        setTimeout(() => setShowAnimation(false), 1500);
-        
-        // Download the template
-        downloadTemplate(blob, synthNameValue);
-        
-        toast({
-          title: "Template generated successfully!",
-          description: `${synthNameValue}_Template.syx has been downloaded.`,
-        });
-      } catch (error) {
-        throw new Error('Failed to build template: ' + (error instanceof Error ? error.message : String(error)));
+      // Build the template
+      const buildResponse = await buildTemplate({
+        synthName: data.synthName,
+        controls: parseResponse.data
+      });
+      
+      if (!buildResponse.success || !buildResponse.data) {
+        throw new Error(buildResponse.error || 'Failed to build template');
       }
+      
+      // Show success animation
+      setShowAnimation(true);
+      setTimeout(() => setShowAnimation(false), 1500);
+      
+      // Download the template
+      downloadTemplate(buildResponse.data, data.synthName);
+      
+      toast({
+        title: "Template generated successfully!",
+        description: `${data.synthName}_Template.syx has been downloaded.`,
+      });
     } catch (error) {
       console.error('Error processing data:', error);
       toast({
@@ -79,16 +69,13 @@ const Index = () => {
       
       <main className="flex-1 px-4 py-8">
         <div className="max-w-xl mx-auto">
-          <div className="mb-8 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-white text-left mb-2">
-                SL MkIII Template Builder
-              </h1>
-              <p className="text-slate text-left">
-                Turn any CC chart into a Novation SL MkIII template .syx file in one click.
-              </p>
-            </div>
-            <ApiKeyButton />
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white text-left mb-2">
+              SL MkIII Template Builder
+            </h1>
+            <p className="text-slate text-left">
+              Turn any CC chart into a Novation SL MkIII template .syx file in one click.
+            </p>
           </div>
           
           <div className="bg-gunmetal/80 rounded-2xl p-8 shadow-lg relative">

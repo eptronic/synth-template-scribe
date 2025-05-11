@@ -1,29 +1,8 @@
-
 # Welcome to your Lovable project
 
 ## Project info
 
 **URL**: https://lovable.dev/projects/223cbdd8-8666-4568-8d14-98a349023e4e
-
-## Environment Variables
-
-This project requires the following environment variables:
-
-- **VITE_OPENAI_API_KEY**: Your OpenAI API key is required for the template parsing functionality.
-
-### Adding your API key to the project
-
-To add your OpenAI API key to this Lovable project:
-
-1. Click on the "Publish" button in the top right corner
-2. Select "Configure" 
-3. Under "Environment Variables", add:
-   - Name: `VITE_OPENAI_API_KEY`
-   - Value: Your actual OpenAI API key
-
-This will securely store your API key and make it available to the application when deployed.
-
-For local development outside of Lovable, you would need to create a `.env` file with this variable.
 
 ## How can I edit this code?
 
