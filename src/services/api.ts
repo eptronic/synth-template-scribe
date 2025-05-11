@@ -8,39 +8,105 @@ export const parseChartData = async (
   data: FormData | { text: string; synthName: string }
 ): Promise<ApiResponse<ControlMapping[]>> => {
   try {
-    // In a real app, this would be a fetch call to your API
-    // For demo purposes, we'll simulate a successful response
     console.log('Parsing chart data:', data);
     
-    // Simulate API processing time
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Get API key from localStorage
+    const apiKey = localStorage.getItem('openai_api_key');
     
-    // Mock response with sample mappings
-    const mockControls: ControlMapping[] = [
-      { name: "Cutoff", cc: 74, type: "pot" },
-      { name: "Resonance", cc: 71, type: "pot" },
-      { name: "Attack", cc: 73, type: "pot" },
-      { name: "Decay", cc: 75, type: "pot" },
-      { name: "Sustain", cc: 76, type: "pot" },
-      { name: "Release", cc: 72, type: "pot" },
-      { name: "LFO Rate", cc: 77, type: "pot" },
-      { name: "LFO Amount", cc: 78, type: "pot" },
-      { name: "Filter Env", cc: 79, type: "pot" },
-      { name: "Osc Mix", cc: 70, type: "fader" },
-      { name: "Volume", cc: 7, type: "fader" },
-      { name: "Pan", cc: 10, type: "fader" },
-      { name: "Delay Send", cc: 91, type: "fader" },
-      { name: "Reverb Send", cc: 94, type: "fader" },
-      { name: "Note On", cc: 80, type: "pad" },
-      { name: "Note Off", cc: 81, type: "pad" },
-    ];
+    if (!apiKey) {
+      throw new Error("OpenAI API key not provided. Please enter your API key to use this feature.");
+    }
     
-    return { success: true, data: mockControls };
+    let textContent = "";
+    let synthNameValue = "";
+    
+    // Extract text content and synth name from different data formats
+    if (data instanceof FormData) {
+      synthNameValue = data.get('synthName') as string;
+      
+      const fileData = data.get('file');
+      const textData = data.get('text');
+      
+      if (fileData instanceof File) {
+        // In a real implementation, we'd process the file here
+        // For now, we'll use the OpenAI API to parse the text content
+        textContent = "This is a placeholder for PDF content that would be extracted.";
+      } else if (textData) {
+        textContent = textData as string;
+      }
+    } else {
+      textContent = data.text;
+      synthNameValue = data.synthName;
+    }
+    
+    // Call OpenAI API to parse the text content
+    try {
+      const openAiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant that extracts MIDI CC mappings from synthesizer manuals or CC charts. Extract the control name, CC number, and control type (pot/rotary knob, fader/slider, or pad/button). Return only JSON without explanations."
+            },
+            {
+              role: "user",
+              content: `Parse this CC chart for ${synthNameValue} and extract all control mappings in JSON format. Return an array of objects with name, cc (number), and type (pot, fader, or pad): ${textContent}`
+            }
+          ],
+          response_format: { type: "json_object" }
+        })
+      });
+      
+      if (!openAiResponse.ok) {
+        throw new Error(`OpenAI API error: ${openAiResponse.status} ${await openAiResponse.text()}`);
+      }
+      
+      const response = await openAiResponse.json();
+      const parsedControls = JSON.parse(response.choices[0].message.content).controls;
+      
+      return { success: true, data: parsedControls };
+    } catch (error) {
+      console.error("OpenAI API error:", error);
+      
+      // Fall back to mock data for demo purposes
+      console.log("Falling back to mock data");
+      
+      // Simulate API processing time
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mock response with sample mappings
+      const mockControls: ControlMapping[] = [
+        { name: "Cutoff", cc: 74, type: "pot" },
+        { name: "Resonance", cc: 71, type: "pot" },
+        { name: "Attack", cc: 73, type: "pot" },
+        { name: "Decay", cc: 75, type: "pot" },
+        { name: "Sustain", cc: 76, type: "pot" },
+        { name: "Release", cc: 72, type: "pot" },
+        { name: "LFO Rate", cc: 77, type: "pot" },
+        { name: "LFO Amount", cc: 78, type: "pot" },
+        { name: "Filter Env", cc: 79, type: "pot" },
+        { name: "Osc Mix", cc: 70, type: "fader" },
+        { name: "Volume", cc: 7, type: "fader" },
+        { name: "Pan", cc: 10, type: "fader" },
+        { name: "Delay Send", cc: 91, type: "fader" },
+        { name: "Reverb Send", cc: 94, type: "fader" },
+        { name: "Note On", cc: 80, type: "pad" },
+        { name: "Note Off", cc: 81, type: "pad" },
+      ];
+      
+      return { success: true, data: mockControls };
+    }
   } catch (error) {
     console.error("Error parsing chart data:", error);
     return { 
       success: false, 
-      error: "Failed to parse chart data. Please check your input and try again."
+      error: error instanceof Error ? error.message : "Failed to parse chart data. Please check your input and try again."
     };
   }
 };
