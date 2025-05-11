@@ -40,17 +40,12 @@ export const parseChartData = async (
     try {
       // In a real backend implementation, this would use:
       // import os
+      // from dotenv import load_dotenv
+      // load_dotenv()
       // key = os.getenv("OPENAI_API_KEY")
       // if not key:
-      //     raise RuntimeError("OPENAI_API_KEY missing")
+      //     raise HTTPException(status_code=500, detail="OpenAI API key not configured")
 
-      // For frontend mock, we'll simulate an API call with error handling for missing API key
-      const mockApiKeyMissing = Math.random() > 0.8; // Randomly simulate missing API key
-      
-      if (mockApiKeyMissing) {
-        throw new Error("Server configuration error: OPENAI_API_KEY environment variable is missing");
-      }
-      
       // Simulate API processing time
       await new Promise(resolve => setTimeout(resolve, 1500));
       
@@ -77,6 +72,15 @@ export const parseChartData = async (
       return { success: true, data: mockControls };
     } catch (error) {
       console.error("API error:", error);
+      
+      // Handle specific error for missing API key
+      if (error instanceof Error && error.message.includes("OpenAI API key not configured")) {
+        return {
+          success: false,
+          error: "Server configuration error: OpenAI API key not configured"
+        };
+      }
+      
       return { 
         success: false, 
         error: error instanceof Error ? error.message : "Failed to parse chart data. Please check your input and try again."
