@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import FileUploader from '../components/FileUploader';
 import MappingsPreview from '../components/MappingsPreview';
-import ApiKeyInput from '../components/ApiKeyInput';
 import { parseChartData, buildTemplate, downloadTemplate } from '../services/api';
 import { ControlMapping } from '../types';
 import { toast } from "../components/ui/use-toast";
@@ -13,19 +12,10 @@ const Index = () => {
   const [mappings, setMappings] = useState<ControlMapping[]>([]);
   const [synthName, setSynthName] = useState<string>('');
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
-  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('openai_api_key') || '');
-
-  const handleApiKeyChange = (newApiKey: string) => {
-    setApiKey(newApiKey);
-  };
 
   const handleDataSubmit = async (data: FormData | { text: string, synthName: string }) => {
     try {
       setIsProcessing(true);
-      
-      if (!apiKey) {
-        throw new Error("OpenAI API key required. Please enter your API key before submitting.");
-      }
       
       // Store synth name for later use
       if (data instanceof FormData) {
@@ -99,7 +89,6 @@ const Index = () => {
           
           <div className="bg-gunmetal/80 rounded-2xl p-8 shadow-lg relative">
             {showAnimation && <div className="data-sent-animation"></div>}
-            <ApiKeyInput onApiKeyChange={handleApiKeyChange} requiredForOperation={true} />
             <FileUploader onDataSubmit={handleDataSubmit} isProcessing={isProcessing} />
           </div>
           

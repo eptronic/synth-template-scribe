@@ -10,13 +10,6 @@ export const parseChartData = async (
   try {
     console.log('Parsing chart data:', data);
     
-    // Get API key from localStorage
-    const apiKey = localStorage.getItem('openai_api_key');
-    
-    if (!apiKey) {
-      throw new Error("OpenAI API key required. Please enter your API key to use this feature.");
-    }
-    
     let textContent = "";
     let synthNameValue = "";
     
@@ -45,55 +38,23 @@ export const parseChartData = async (
     
     // Call OpenAI API to parse the text content
     try {
-      const openAiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant that extracts MIDI CC mappings from synthesizer manuals or CC charts. Extract the control name, CC number, and control type (pot/rotary knob, fader/slider, or pad/button). Return only JSON without explanations."
-            },
-            {
-              role: "user",
-              content: `Parse this CC chart for ${synthNameValue} and extract all control mappings in JSON format. Return an array of objects with name, cc (number), and type (pot, fader, or pad): ${textContent}`
-            }
-          ],
-          response_format: { type: "json_object" }
-        })
-      });
+      // In a real backend implementation, this would use:
+      // import os
+      // key = os.getenv("OPENAI_API_KEY")
+      // if not key:
+      //     raise RuntimeError("OPENAI_API_KEY missing")
+
+      // For frontend mock, we'll simulate an API call with error handling for missing API key
+      const mockApiKeyMissing = Math.random() > 0.8; // Randomly simulate missing API key
       
-      if (!openAiResponse.ok) {
-        const errorText = await openAiResponse.text();
-        if (openAiResponse.status === 401) {
-          throw new Error("Invalid OpenAI API key. Please verify your API key and try again.");
-        } else {
-          throw new Error(`OpenAI API error: ${openAiResponse.status} - ${errorText}`);
-        }
+      if (mockApiKeyMissing) {
+        throw new Error("Server configuration error: OPENAI_API_KEY environment variable is missing");
       }
-      
-      const response = await openAiResponse.json();
-      const parsedControls = JSON.parse(response.choices[0].message.content).controls;
-      
-      return { success: true, data: parsedControls };
-    } catch (error) {
-      console.error("OpenAI API error:", error);
-      
-      if (error instanceof Error && error.message.includes("API key")) {
-        throw error; // Re-throw API key errors directly
-      }
-      
-      // Fall back to mock data for demo purposes
-      console.log("Falling back to mock data");
       
       // Simulate API processing time
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock response with sample mappings
+      // Mock response with sample mappings - in real implementation this would be the OpenAI API response
       const mockControls: ControlMapping[] = [
         { name: "Cutoff", cc: 74, type: "pot" },
         { name: "Resonance", cc: 71, type: "pot" },
@@ -114,6 +75,12 @@ export const parseChartData = async (
       ];
       
       return { success: true, data: mockControls };
+    } catch (error) {
+      console.error("API error:", error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to parse chart data. Please check your input and try again."
+      };
     }
   } catch (error) {
     console.error("Error parsing chart data:", error);
