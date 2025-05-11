@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +20,12 @@ export default {
 		},
 		extend: {
 			colors: {
+				midnight: '#0d1117',   // background like Components
+				gunmetal: '#1c2128',   // panels & cards
+				accent: '#08e0ff',   // LED‑blue (pad glow, links, buttons)
+				accentDim: '#036b85',   // subdued accent for borders
+				slate: '#949ba5',   // tertiary text
+				white: '#ffffff',
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -70,26 +77,31 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'ledPulse': { 
+					'0%,100%': { boxShadow: '0 0 0 0 rgba(8, 224, 255, 0.27)' },
+					'50%': { boxShadow: '0 0 0 8px rgba(8, 224, 255, 0.07)' }
+				},
+				'dataSent': {
+					'0%': { width: '0%' },
+					'100%': { width: '100%' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'ledPulse': 'ledPulse 2s infinite ease-in-out',
+				'dataSent': 'dataSent 1s ease-in-out forwards'
+			},
+			fontFamily: {
+				inter: ['Inter', 'system-ui', 'sans-serif'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
